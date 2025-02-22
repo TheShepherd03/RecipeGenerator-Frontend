@@ -1,0 +1,255 @@
+<div class="add-recipe-container">
+  <div class="form-card">
+    <h1>Add New Recipe</h1>
+
+    <form #recipeForm="ngForm" (ngSubmit)="onSubmit()">
+      <!-- Recipe Name -->
+      <div class="form-group">
+        <label>Recipe Name</label>
+        <input
+          type="text"
+          [(ngModel)]="recipe.name"
+          name="name"
+          placeholder="Enter recipe name..."
+          class="form-control"
+          required
+        >
+      </div>
+
+      <!-- Image URL -->
+      <div class="form-group">
+        <label>Image URL</label>
+        <input
+          type="url"
+          [(ngModel)]="recipe.imageUrl"
+          name="imageUrl"
+          placeholder="Enter image URL..."
+          class="form-control"
+        >
+      </div>
+
+      <!-- Recipe Meta -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cooking Time (mins)</label>
+          <input
+            type="number"
+            [(ngModel)]="recipe.cookingTime"
+            name="cookingTime"
+            class="form-control"
+            [value]="30"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Servings</label>
+          <input
+            type="number"
+            [(ngModel)]="recipe.servings"
+            name="servings"
+            class="form-control"
+            [value]="4"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select
+            [(ngModel)]="recipe.difficulty"
+            name="difficulty"
+            class="form-control"
+          >
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ingredients -->
+      <div class="form-group">
+        <label>Ingredients</label>
+        <div class="input-with-button">
+          <input
+            type="text"
+            [(ngModel)]="currentIngredient"
+            name="currentIngredient"
+            placeholder="Add ingredients one by one..."
+            class="form-control"
+          >
+          <button type="button" (click)="addIngredient()" class="btn-primary">Add</button>
+        </div>
+        <ul class="ingredients-list" *ngIf="recipe.ingredients?.length">
+          <li *ngFor="let ingredient of recipe.ingredients; let i = index">
+            {{ ingredient }}
+            <button type="button" (click)="removeIngredient(i)" class="btn-remove">×</button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Instructions -->
+      <div class="form-group">
+        <label>Cooking Instructions</label>
+        <div class="input-with-button">
+          <textarea
+            [(ngModel)]="currentInstruction"
+            name="currentInstruction"
+            placeholder="Add instructions step by step..."
+            class="form-control"
+            rows="4"
+          ></textarea>
+          <button type="button" (click)="addInstruction()" class="btn-primary">Add Step</button>
+        </div>
+        <ul class="instructions-list" *ngIf="recipe.instructions?.length">
+          <li *ngFor="let instruction of recipe.instructions; let i = index">
+            {{ instruction }}
+            <button type="button" (click)="removeInstruction(i)" class="btn-remove">×</button>
+          </li>
+        </ul>
+      </div>
+
+      <button type="submit" class="btn-submit">Save Recipe</button>
+    </form>
+  </div>
+</div>
+
+<style>
+  .add-recipe-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-weight: 500;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .form-control::placeholder {
+    color: #999;
+  }
+
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+  }
+
+  .input-with-button {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: #0095ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 0.75rem;
+    background: #0095ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+
+  .ingredients-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+  }
+
+  .ingredients-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn-remove {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+  }
+
+  .instructions-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+  }
+
+  .instructions-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .form-card {
+      padding: 1.5rem;
+    }
+  }
+</style>

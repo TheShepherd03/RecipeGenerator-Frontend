@@ -27,8 +27,6 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-export interface PaginatedApiResponse<T> extends ApiResponse<PaginatedResponse<T>> {}
-
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -36,3 +34,5 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   totalPages: number;
 }
+
+export interface PaginatedApiResponse<T> extends ApiResponse<PaginatedResponse<T>> {}

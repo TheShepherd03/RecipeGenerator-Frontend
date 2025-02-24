@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Recipe, DetailedRecipe,  PaginatedResponse, PaginatedApiResponse } from './recipe.model';
+import { Recipe, DetailedRecipe, PaginatedResponse, PaginatedApiResponse } from './recipe.model';
 import { ErrorHandler } from './utils/error-handler';
 import { IngredientUtil } from './utils/ingredient.util';
 import { CacheService } from './services/cache.service';
@@ -29,11 +29,29 @@ export class RecipeService {
       .set('pageSize', pageSize.toString());
 
     return this.http.get<PaginatedApiResponse<Recipe>>(this.apiUrl, { params }).pipe(
+      map(response => ({
+        success: true,
+        data: {
+          items: response.data?.items.map(recipe => this.processRecipe(recipe)) || [],
+          total: response.data?.total || 0,
+          page: response.data?.page || page,
+          pageSize: response.data?.pageSize || pageSize,
+          totalPages: response.data?.totalPages || 0
+        },
+        statusCode: 200
+      })),
       catchError((error: HttpErrorResponse) => {
         const errorMessage = ErrorHandler.handleError(error);
         const statusCode = ErrorHandler.getStatusCode(error);
         return throwError(() => ({
           success: false,
+          data: {
+            items: [],
+            total: 0,
+            page,
+            pageSize,
+            totalPages: 0
+          },
           error: errorMessage,
           statusCode,
           message: errorMessage
@@ -50,16 +68,23 @@ export class RecipeService {
     }
 
     return this.http.get<DetailedRecipe>(`${this.apiUrl}/${id}`).pipe(
-      map(response => {
-        if (!response) {
-          throw new Error('Recipe not found');
-        }
-        this.cacheService.set(cacheKey, response);
-        return response;
+      map(recipe => {
+        const processedRecipe = {
+          ...recipe,
+          cookingTime: Math.floor(Math.random() * 30) + 15,
+          ingredients: IngredientUtil.extractIngredients(recipe)
+        };
+        this.cacheService.set(cacheKey, processedRecipe);
+        return processedRecipe;
       }),
       catchError((error: HttpErrorResponse) => {
         const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => new Error(errorMessage));
+        return throwError(() => ({
+          success: false,
+          error: errorMessage,
+          statusCode: ErrorHandler.getStatusCode(error),
+          message: errorMessage
+        }));
       })
     );
   }

@@ -3,9 +3,6 @@ import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http'
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Recipe, DetailedRecipe, PaginatedResponse, PaginatedApiResponse } from './recipe.model';
-import { ErrorHandler } from './utils/error-handler';
-import { IngredientUtil } from './utils/ingredient.util';
-import { CacheService } from './services/cache.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +10,13 @@ import { CacheService } from './services/cache.service';
 export class RecipeService {
   private apiUrl = 'http://localhost:3000/recipes';
 
-  constructor(private http: HttpClient, private cacheService: CacheService) {}
+  constructor(private http: HttpClient) {}
 
   private processRecipe(recipe: any): Recipe {
     return {
       ...recipe,
       cookingTime: Math.floor(Math.random() * 30) + 15,
-      ingredients: IngredientUtil.extractIngredients(recipe)
+      ingredients: recipe.ingredients || []
     };
   }
 
@@ -41,8 +38,6 @@ export class RecipeService {
         statusCode: 200
       })),
       catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        const statusCode = ErrorHandler.getStatusCode(error);
         return throwError(() => ({
           success: false,
           data: {
@@ -52,101 +47,31 @@ export class RecipeService {
             pageSize,
             totalPages: 0
           },
-          error: errorMessage,
-          statusCode,
-          message: errorMessage
+          statusCode: error.status || 500,
+          message: error.message || 'An error occurred while fetching recipes'
         }));
       })
     );
   }
 
-  getRecipeById(id: string): Observable<DetailedRecipe> {
-    const cacheKey = `recipe_${id}`;
-    const cachedRecipe = this.cacheService.get<DetailedRecipe>(cacheKey);
-    if (cachedRecipe) {
-      return of(cachedRecipe);
-    }
-
+  getRecipeById(id: string): Observable<DetailedRecipe | null> {
     return this.http.get<DetailedRecipe>(`${this.apiUrl}/${id}`).pipe(
-      map(recipe => {
-        const processedRecipe = {
-          ...recipe,
-          cookingTime: Math.floor(Math.random() * 30) + 15,
-          ingredients: IngredientUtil.extractIngredients(recipe)
-        };
-        this.cacheService.set(cacheKey, processedRecipe);
-        return processedRecipe;
-      }),
       catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => ({
-          success: false,
-          error: errorMessage,
-          statusCode: ErrorHandler.getStatusCode(error),
-          message: errorMessage
-        }));
+        console.error('Error fetching recipe:', error);
+        return of(null);
       })
     );
   }
 
-  addRecipe(recipe: Recipe): Observable<Recipe> {
-    return this.http.post<Recipe>(this.apiUrl, recipe).pipe(
-      catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => new Error(errorMessage));
-      })
-    );
-  }
-
-  updateRecipe(id: string, recipe: Recipe): Observable<Recipe> {
-    return this.http.put<Recipe>(`${this.apiUrl}/${id}`, recipe).pipe(
-      catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => new Error(errorMessage));
-      })
-    );
-  }
-
-  deleteRecipe(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => new Error(errorMessage));
-      })
-    );
-  }
-
-  searchRecipes(searchTerm: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/search?ingredient=${encodeURIComponent(searchTerm)}`).pipe(
-      map(response => {
-        console.log('Raw API Response:', response);
-        return response || [];
-      }),
-      catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => new Error(errorMessage));
-      })
-    );
-  }
-
-  searchByIngredients(ingredients: string[]): Observable<Recipe[]> {
-    const params = new HttpParams().set('ingredients', ingredients.join(','));
+  searchRecipes(query: string): Observable<Recipe[]> {
+    const params = new HttpParams().set('q', query);
+    
     return this.http.get<Recipe[]>(`${this.apiUrl}/search`, { params }).pipe(
+      map(recipes => recipes.map(recipe => this.processRecipe(recipe))),
       catchError((error: HttpErrorResponse) => {
-        const errorMessage = ErrorHandler.handleError(error);
-        return throwError(() => new Error(errorMessage));
+        console.error('Error searching recipes:', error);
+        return of([]);
       })
     );
-  }
-
-  getRandomRecipes(): Observable<Recipe[]> {
-    return this.http.get<any>(`${this.apiUrl}/random`)
-      .pipe(
-        map(response => (response.meals || [])),
-        catchError((error: HttpErrorResponse) => {
-          const errorMessage = ErrorHandler.handleError(error);
-          return throwError(() => new Error(errorMessage));
-        })
-      );
   }
 }

@@ -30,3 +30,24 @@
   align-items: center;
   justify-content: center;
 }
+
+.img-fluid {
+  max-height: 400px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.instructions p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.btn-youtube {
+  background-color: #FF0000;
+  border-color: #FF0000;
+}
+
+.btn-youtube:hover {
+  background-color: #CC0000;
+  border-color: #CC0000;
+}

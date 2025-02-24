@@ -1,20 +1,44 @@
-<p>search-recipes works!</p>
+<div class="container">
+  <div class="search-container">
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Enter ingredients (e.g., eggs, milk, flour)..."
+        (keyup.enter)="searchRecipes()"
+        class="search-input"
+      >
+    </div>
+  </div>
 
-<mat-form-field appearance="fill">
-  <mat-label>Search Ingredients</mat-label>
-  <input matInput [(ngModel)]="searchQuery" (keyup.enter)="search()">
-</mat-form-field>
+  <div class="welcome-message text-center">
+    <h1>Welcome to RecipeGen! Enter ingredients you have, and we'll suggest recipes for you.</h1>
+  </div>
 
-<button mat-raised-button color="primary" (click)="search()">Search</button>
+  <div class="suggested-recipes">
+    <h2>Suggested Recipes</h2>
+    <div class="recipe-grid">
+      <div class="recipe-card" *ngFor="let recipe of suggestedRecipes" [routerLink]="['/recipe', recipe.idMeal]">
+        <img [src]="recipe.strMealThumb" [alt]="recipe.strMeal" class="recipe-image">
+        <div class="recipe-info">
+          <h3>{{recipe.strMeal}}</h3>
+          <p>View Recipe Details</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="search-results">
-  <mat-card *ngFor="let recipe of searchResults" class="recipe-card">
-    <mat-card-title>{{ recipe.name }}</mat-card-title>
-    <mat-card-content>
-      <p>Ingredients: {{ recipe.ingredients.join(', ') }}</p>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-button [routerLink]="['/recipe', recipe.id]">View Details</button>
-    </mat-card-actions>
-  </mat-card>
+  <div class="search-results" *ngIf="recipes && recipes.length > 0">
+    <h2>Search Results</h2>
+    <div class="recipe-grid">
+      <div class="recipe-card" *ngFor="let recipe of recipes" [routerLink]="['/recipe', recipe.idMeal]">
+        <img [src]="recipe.strMealThumb" [alt]="recipe.strMeal" class="recipe-image">
+        <div class="recipe-info">
+          <h3>{{recipe.strMeal}}</h3>
+          <p>View Recipe Details</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

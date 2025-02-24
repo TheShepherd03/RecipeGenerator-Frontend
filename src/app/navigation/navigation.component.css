@@ -1,0 +1,21 @@
+.navbar {
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+.nav-link {
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: rgba(255,255,255,0.8) !important;
+}
+
+.nav-link.active {
+  font-weight: 500;
+}

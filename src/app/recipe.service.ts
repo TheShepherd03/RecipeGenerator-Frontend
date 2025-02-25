@@ -8,7 +8,8 @@ import { Recipe, DetailedRecipe, PaginatedResponse, PaginatedApiResponse } from 
   providedIn: 'root'
 })
 export class RecipeService {
-  private apiUrl = 'http://localhost:3000/recipes';
+  private apiUrl = 'http://localhost:3000/api/recipes';
+  //private apiUrl = 'https://www.themealdb.com/api/json/v1/1/filter.php';
 
   constructor(private http: HttpClient) {}
 
@@ -64,14 +65,9 @@ export class RecipeService {
   }
 
   searchRecipes(query: string): Observable<Recipe[]> {
-    const params = new HttpParams().set('q', query);
+    const params = new HttpParams().set('ingredient', query);
     
-    return this.http.get<Recipe[]>(`${this.apiUrl}/search`, { params }).pipe(
-      map(recipes => recipes.map(recipe => this.processRecipe(recipe))),
-      catchError((error: HttpErrorResponse) => {
-        console.error('Error searching recipes:', error);
-        return of([]);
-      })
-    );
+    return this.http.get<Recipe[]>(`${this.apiUrl}/search`, { params })
+      
   }
 }

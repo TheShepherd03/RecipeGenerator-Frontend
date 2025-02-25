@@ -8,9 +8,9 @@ import { Recipe, DetailedRecipe, PaginatedResponse, PaginatedApiResponse } from 
   providedIn: 'root'
 })
 export class RecipeService {
-  private apiUrl = 'http://localhost:3000/api/recipes';
+  private apiUrl = 'https://recipegenerator-production-0e4a.up.railway.app/api/recipes';
   //private apiUrl = 'https://www.themealdb.com/api/json/v1/1/filter.php';
-
+  //private apiUrl = 'http://localhost:3000/api/recipes';
   constructor(private http: HttpClient) {}
 
   private processRecipe(recipe: any): Recipe {
